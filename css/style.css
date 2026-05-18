@@ -223,3 +223,153 @@
         font-size: 14px;
       }
     }
+
+
+
+    #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background:
+                linear-gradient(to bottom,
+                    #111111 0%,
+                    #000000 100%);
+        }
+        /* BACKGROUND IMAGE */
+        #container::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                url("https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2071&auto=format&fit=crop") center center / cover no-repeat;
+            opacity: .15;
+            filter: blur(2px);
+            transform: scale(1.05);
+        }
+        canvas {
+            display: block;
+            position: relative;
+            z-index: 2;
+        }
+        .overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .title {
+            position: absolute;
+            top: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 4rem;
+            font-weight: 900;
+            letter-spacing: 14px;
+            text-transform: uppercase;
+            text-shadow:
+                0 0 40px rgba(255, 255, 255, .12);
+            opacity: .95;
+        }
+        .subtitle {
+            position: absolute;
+            top: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, .55);
+            font-size: 13px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+        .hover-text {
+            position: absolute;
+            left: 50%;
+            bottom: 170px;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 12px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            opacity: 0;
+            transition: .35s;
+        }
+        .hover-text.show {
+            opacity: .7;
+        }
+        .shoot-btn {
+            position: absolute;
+            left: 50%;
+            bottom: 90px;
+            transform:
+                translateX(-50%) scale(.85);
+            padding: 18px 42px;
+            border: 2px solid rgba(255, 255, 255, .8);
+            background: rgba(255, 255, 255, .08);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 5px;
+            cursor: pointer;
+            opacity: 0;
+            transition: .4s ease;
+            pointer-events: none;
+        }
+        .shoot-btn.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform:
+                translateX(-50%) scale(1);
+        }
+        .shoot-btn:hover {
+            background: white;
+            color: black;
+            box-shadow:
+                0 0 35px rgba(255, 255, 255, .35);
+        }
+        .muzzle-flash {
+            position: absolute;
+            width: 950px;
+            left: 50%;
+            top: 50%;
+            transform:
+                translate(-50%, -50%) scale(.1);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+        }
+        .white-flash {
+            position: absolute;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            z-index: 30;
+            pointer-events: none;
+        }
+        .black-screen {
+            position: absolute;
+            inset: 0;
+            background: black;
+            opacity: 0;
+            transition: 2s ease;
+            z-index: 40;
+            pointer-events: none;
+        }
+        @media(max-width:768px) {
+            .title {
+                font-size: 1.8rem;
+                letter-spacing: 6px;
+            }
+            .subtitle {
+                top: 85px;
+                font-size: 11px;
+            }
+            .shoot-btn {
+                padding: 14px 28px;
+                font-size: 13px;
+            }
+            .muzzle-flash {
+                width: 420px;
+            }
+        }
