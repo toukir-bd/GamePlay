@@ -1,347 +1,581 @@
-<!DOCTYPE html>
+
+
+    <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GamePlay</title>
-    <!-- IMPORT MAP -->
-    <script type="importmap">
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Samurai Edge</title>
+
+  <!-- IMPORT MAP -->
+  <script type="importmap">
   {
     "imports": {
       "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
     }
   }
   </script>
+
   <link rel="stylesheet" href="css/style.css" />
+
 </head>
+
 <body>
-    <div id="container">
-        <div class="overlay">
-            <div class="title">
-                Kendo
-            </div>
-            <div class="hover-text" id="hoverText">
-                Hover Weapon
-            </div>
-            <button class="shoot-btn" id="shootBtn">
-                Play Teaser
-            </button>
-            <img src="./assets/gunfire.png" class="muzzle-flash" id="muzzleFlash" />
-            <div class="white-flash" id="whiteFlash">
-            </div>
-            <div class="black-screen" id="blackScreen">
-            </div>
-        </div>
+
+<div id="container">
+
+  <div class="overlay">
+
+    <div class="title">
+      Samurai Edge
     </div>
-    <!-- AUDIO -->
-    <audio id="gunshot" preload="auto">
-        <source src="./assets/gunshot.mp3" type="audio/mpeg">
-    </audio>
-    <script type="module">
-        import * as THREE from "three";
-        import {
-            GLTFLoader
-        }
-            from "https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
-        /* =========================
-           SCENE
-        ========================= */
-        const scene =
-            new THREE.Scene();
-        /* =========================
-           CAMERA
-        ========================= */
-        const camera =
-            new THREE.PerspectiveCamera(
-                30,
-                window.innerWidth /
-                window.innerHeight,
-                0.1,
-                1000
-            );
-        /* MORE ZOOMED OUT */
-        camera.position.set(
-            0,
-            0,
-            10
-        );
-        /* =========================
-           RENDERER
-        ========================= */
-        const renderer =
-            new THREE.WebGLRenderer({
-                antialias: true,
-                alpha: true
-            });
-        renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
-        );
-        renderer.setPixelRatio(
-            Math.min(
-                window.devicePixelRatio,
-                2
-            )
-        );
-        renderer.outputColorSpace =
-            THREE.SRGBColorSpace;
-        renderer.toneMapping =
-            THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure =
-            1.8;
-        document
-            .getElementById("container")
-            .appendChild(renderer.domElement);
-        /* =========================
-           LIGHTS
-        ========================= */
-        const ambient =
-            new THREE.AmbientLight(
-                0xffffff,
-                4
-            );
-        scene.add(ambient);
-        /* FRONT */
-        const frontLight =
-            new THREE.DirectionalLight(
-                0xffffff,
-                5
-            );
-        frontLight.position.set(
-            0,
-            2,
-            6
-        );
-        scene.add(frontLight);
-        /* SIDE */
-        const sideLight =
-            new THREE.DirectionalLight(
-                0xffaa66,
-                2
-            );
-        sideLight.position.set(
-            5,
-            2,
-            4
-        );
-        scene.add(sideLight);
-        /* =========================
-           GROUP
-        ========================= */
-        const gunGroup =
-            new THREE.Group();
-        scene.add(gunGroup);
-        /* =========================
-           LOADER
-        ========================= */
-        const loader =
-            new GLTFLoader();
-        /* =========================
-           LOAD MODEL
-        ========================= */
-        loader.load(
-            "./gltf/samurai_edge.gltf",
-            (gltf) => {
-                const gun =
-                    gltf.scene;
-                /* RESET */
-                gun.position.set(
-                    0,
-                    0,
-                    0
-                );
-                gun.rotation.set(
-                    0,
-                    0,
-                    0
-                );
-                /* MASSIVE MODEL FIX */
-                gun.scale.set(
-                    0.015,
-                    0.015,
-                    0.015
-                );
-                /* CENTER MODEL */
-                const box =
-                    new THREE.Box3()
-                        .setFromObject(gun);
-                const center =
-                    new THREE.Vector3();
-                box.getCenter(center);
-                gun.position.x -= center.x;
-                gun.position.y -= center.y;
-                gun.position.z -= center.z;
-                /* HERO ANGLE */
-                gun.rotation.y =
-                    -Math.PI / 2;
-                gun.rotation.x =
-                    0.08;
-                /* MATERIAL FIX */
-                gun.traverse((child) => {
-                    if (child.isMesh) {
-                        child.material.metalness = 0.1;
-                        child.material.roughness = 0.75;
-                        child.material.envMapIntensity = 1.5;
-                        child.material.needsUpdate = true;
-                    }
-                });
-                gunGroup.add(gun);
-                /* POSITION */
-                gunGroup.position.set(
-                    0,
-                    -0.8,
-                    0
-                );
-            },
-            undefined,
-            (err) => {
-                console.error(err);
-            }
-        );
-        /* =========================
-           HOVER DETECTION
-        ========================= */
-        const raycaster =
-            new THREE.Raycaster();
-        const mouse =
-            new THREE.Vector2();
-        const shootBtn =
-            document.getElementById("shootBtn");
-        const hoverText =
-            document.getElementById("hoverText");
-        window.addEventListener(
-            "mousemove",
-            (e) => {
-                mouse.x =
-                    (e.clientX /
-                        window.innerWidth)
-                    * 2 - 1;
-                mouse.y =
-                    -(e.clientY /
-                        window.innerHeight)
-                    * 2 + 1;
-                raycaster.setFromCamera(
-                    mouse,
-                    camera
-                );
-                const intersects =
-                    raycaster.intersectObject(
-                        gunGroup,
-                        true
-                    );
-                if (intersects.length > 0) {
-                    shootBtn.classList.add("show");
-                    hoverText.classList.add("show");
-                }
-                else {
-                    shootBtn.classList.remove("show");
-                    hoverText.classList.remove("show");
-                }
-            }
-        );
-        /* =========================
-           EFFECTS
-        ========================= */
-        const muzzleFlash =
-            document.getElementById("muzzleFlash");
-        const whiteFlash =
-            document.getElementById("whiteFlash");
-        const blackScreen =
-            document.getElementById("blackScreen");
-        const gunshot =
-            document.getElementById("gunshot");
-        /* =========================
-           SHOOT
-        ========================= */
-        shootBtn.addEventListener(
-            "click",
-            () => {
-                shootBtn.style.display =
-                    "none";
-                hoverText.style.display =
-                    "none";
-                gunshot.currentTime = 0;
-                gunshot.play();
-                let progress = 0;
-                function shootAnimation() {
-                    progress += .05;
-                    /* MOVE FORWARD */
-                    gunGroup.position.z =
-                        progress * 5;
-                    gunGroup.rotation.x =
-                        -progress * .1;
-                    /* FLASH */
-                    muzzleFlash.style.opacity =
-                        1;
-                    muzzleFlash.style.transform =
-                        `translate(-50%, -50%)
-      scale(${progress * 3})`;
-                    if (progress < 1) {
-                        requestAnimationFrame(
-                            shootAnimation
-                        );
-                    }
-                    else {
-                        /* WHITE FLASH */
-                        whiteFlash.style.transition =
-                            "none";
-                        whiteFlash.style.opacity = 1;
-                        setTimeout(() => {
-                            whiteFlash.style.transition =
-                                ".12s ease";
-                            whiteFlash.style.opacity = 0;
-                        }, 35);
-                        /* BLACKOUT */
-                        setTimeout(()=>{
 
-                        blackScreen.style.opacity = 1;
+    <div class="subtitle">
+      Resident Evil Edition
+    </div>
 
-                        /* GO TO MAIN PAGE */
+    <div
+      class="hover-text"
+      id="hoverText">
 
-                        setTimeout(()=>{
+      Hover Weapon
 
-                            window.location.href =
-                            "./index.html";
+    </div>
 
-                        },1800);
+    <button
+      class="shoot-btn"
+      id="shootBtn">
 
-                        },100);
-                    }
-                }
-                shootAnimation();
-            }
+      FIRE
+
+    </button>
+
+    <img
+      src="./Gun-Fire-PNG-Isolated-HD.png"
+      class="muzzle-flash"
+      id="muzzleFlash"
+    />
+
+    <div
+      class="white-flash"
+      id="whiteFlash">
+    </div>
+
+    <div
+      class="black-screen"
+      id="blackScreen">
+    </div>
+
+  </div>
+
+</div>
+
+<!-- AUDIO -->
+
+<audio id="gunshot" preload="auto">
+
+  <source
+    src="./assets/gunshot.mp3"
+    type="audio/mpeg">
+
+</audio>
+
+<script type="module">
+
+import * as THREE from "three";
+
+import {
+  GLTFLoader
+}
+from "https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+
+/* =========================
+   SCENE
+========================= */
+
+const scene =
+new THREE.Scene();
+
+/* =========================
+   CAMERA
+========================= */
+
+const camera =
+new THREE.PerspectiveCamera(
+
+  30,
+
+  window.innerWidth /
+  window.innerHeight,
+
+  0.1,
+
+  1000
+
+);
+
+camera.position.set(
+  0,
+  0,
+  10
+);
+
+/* =========================
+   RENDERER
+========================= */
+
+const renderer =
+new THREE.WebGLRenderer({
+
+  antialias:true,
+
+  alpha:true
+
+});
+
+renderer.setSize(
+  window.innerWidth,
+  window.innerHeight
+);
+
+renderer.setPixelRatio(
+  Math.min(
+    window.devicePixelRatio,
+    2
+  )
+);
+
+renderer.outputColorSpace =
+THREE.SRGBColorSpace;
+
+renderer.toneMapping =
+THREE.ACESFilmicToneMapping;
+
+renderer.toneMappingExposure =
+1.8;
+
+document
+.getElementById("container")
+.appendChild(renderer.domElement);
+
+/* =========================
+   LIGHTS
+========================= */
+
+const ambient =
+new THREE.AmbientLight(
+  0xffffff,
+  4
+);
+
+scene.add(ambient);
+
+const frontLight =
+new THREE.DirectionalLight(
+  0xffffff,
+  5
+);
+
+frontLight.position.set(
+  0,
+  2,
+  6
+);
+
+scene.add(frontLight);
+
+const sideLight =
+new THREE.DirectionalLight(
+  0xffaa66,
+  2
+);
+
+sideLight.position.set(
+  5,
+  2,
+  4
+);
+
+scene.add(sideLight);
+
+/* =========================
+   GUN GROUP
+========================= */
+
+const gunGroup =
+new THREE.Group();
+
+scene.add(gunGroup);
+
+/* =========================
+   LOADER
+========================= */
+
+const loader =
+new GLTFLoader();
+
+/* =========================
+   LOAD MODEL
+========================= */
+
+loader.load(
+
+  "./gltf/samurai_edge.gltf",
+
+  (gltf)=>{
+
+    const gun =
+    gltf.scene;
+
+    gun.scale.set(
+      0.015,
+      0.015,
+      0.015
+    );
+
+    /* CENTER */
+
+    const box =
+    new THREE.Box3()
+    .setFromObject(gun);
+
+    const center =
+    new THREE.Vector3();
+
+    box.getCenter(center);
+
+    gun.position.x -= center.x;
+
+    gun.position.y -= center.y;
+
+    gun.position.z -= center.z;
+
+    /* SIDE VIEW */
+
+    gun.rotation.y =
+    Math.PI / 2;
+
+    gun.rotation.x = 0;
+
+    gun.rotation.z = 0;
+
+    /* MATERIAL */
+
+    gun.traverse((child)=>{
+
+      if(child.isMesh){
+
+        child.material.metalness = 0.15;
+
+        child.material.roughness = 0.75;
+
+        child.material.envMapIntensity = 1.5;
+
+        child.material.needsUpdate = true;
+
+      }
+
+    });
+
+    gunGroup.add(gun);
+
+    gunGroup.position.set(
+      0,
+      -0.8,
+      0
+    );
+
+  }
+
+);
+
+/* =========================
+   HOVER DETECTION
+========================= */
+
+const raycaster =
+new THREE.Raycaster();
+
+const mouse =
+new THREE.Vector2();
+
+const shootBtn =
+document.getElementById("shootBtn");
+
+const hoverText =
+document.getElementById("hoverText");
+
+window.addEventListener(
+
+  "mousemove",
+
+  (e)=>{
+
+    mouse.x =
+
+    (e.clientX /
+    window.innerWidth)
+    * 2 - 1;
+
+    mouse.y =
+
+    -(e.clientY /
+    window.innerHeight)
+    * 2 + 1;
+
+    raycaster.setFromCamera(
+      mouse,
+      camera
+    );
+
+    const intersects =
+    raycaster.intersectObject(
+      gunGroup,
+      true
+    );
+
+    if(intersects.length > 0){
+
+      shootBtn.classList.add("show");
+
+      hoverText.classList.add("show");
+
+    }
+
+    else{
+
+      shootBtn.classList.remove("show");
+
+      hoverText.classList.remove("show");
+
+    }
+
+  }
+
+);
+
+/* =========================
+   CURSOR FOLLOW
+========================= */
+
+let targetX = 0;
+let targetY = 0;
+
+let currentX = 0;
+let currentY = 0;
+
+window.addEventListener(
+
+  "mousemove",
+
+  (e)=>{
+
+    targetX =
+
+    (e.clientX / window.innerWidth - 0.5);
+
+    targetY =
+
+    (e.clientY / window.innerHeight - 0.5);
+
+  }
+
+);
+
+/* =========================
+   EFFECTS
+========================= */
+
+const muzzleFlash =
+document.getElementById("muzzleFlash");
+
+const whiteFlash =
+document.getElementById("whiteFlash");
+
+const blackScreen =
+document.getElementById("blackScreen");
+
+const gunshot =
+document.getElementById("gunshot");
+
+/* =========================
+   SHOOT
+========================= */
+
+shootBtn.addEventListener(
+
+  "click",
+
+  ()=>{
+
+    shootBtn.style.display =
+    "none";
+
+    hoverText.style.display =
+    "none";
+
+    gunshot.currentTime = 0;
+
+    gunshot.play();
+
+    let progress = 0;
+
+    function shootAnimation(){
+
+      progress += 0.05;
+
+      /* MOVE TOWARD CAMERA */
+
+      gunGroup.position.z =
+      progress * 8;
+
+      /* AIM AT USER */
+
+      gunGroup.rotation.y =
+      -progress * 0.6;
+
+      gunGroup.rotation.x =
+      -progress * 0.15;
+
+      /* MUZZLE FLASH */
+
+muzzleFlash.style.opacity = progress;
+      muzzleFlash.style.transform =1
+
+      `translate(-50%, -50%)
+      scale(${progress * 4})`;
+
+      if(progress < 1){
+
+        requestAnimationFrame(
+          shootAnimation
         );
-        /* =========================
-           ANIMATE
-        ========================= */
-        function animate() {
-            requestAnimationFrame(
-                animate
-            );
-            /* SLOW ROTATION */
-            gunGroup.rotation.y += .0015;
-            renderer.render(
-                scene,
-                camera
-            );
-        }
-        animate();
-        /* =========================
-           RESIZE
-        ========================= */
-        window.addEventListener(
-            "resize",
-            () => {
-                camera.aspect =
-                    window.innerWidth /
-                    window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(
-                    window.innerWidth,
-                    window.innerHeight
-                );
-            }
-        );
-    </script>
+
+      }
+
+      else{
+
+        /* WHITE FLASH */
+
+        whiteFlash.style.transition =
+        "none";
+
+        whiteFlash.style.opacity = 1;
+
+        setTimeout(()=>{
+
+          whiteFlash.style.transition =
+          ".12s ease";
+
+          whiteFlash.style.opacity = 0;
+
+        },35);
+
+        /* BLACK SCREEN */
+
+        setTimeout(()=>{
+
+          blackScreen.style.opacity = 1;
+
+          /* REDIRECT */
+
+          setTimeout(()=>{
+
+            window.location.href =
+            "./index.html";
+
+          },1800);
+
+        },100);
+
+      }
+
+    }
+
+    shootAnimation();
+
+  }
+
+);
+
+/* =========================
+   ANIMATE
+========================= */
+
+function animate(){
+
+  requestAnimationFrame(
+    animate
+  );
+
+  currentX +=
+  (targetX - currentX) * 0.05;
+
+  currentY +=
+  (targetY - currentY) * 0.05;
+
+  /* KEEP SIDE ANGLE */
+
+  gunGroup.rotation.y =
+  Math.PI / 2 + (currentX * 0.2);
+
+  gunGroup.rotation.x =
+  currentY * 0.08;
+
+  /* SUBTLE POSITION */
+
+  gunGroup.position.x =
+  currentX * 0.3;
+
+  gunGroup.position.y =
+  -0.8 - currentY * 0.15;
+
+  renderer.render(
+    scene,
+    camera
+  );
+
+}
+
+animate();
+
+/* =========================
+   RESIZE
+========================= */
+
+window.addEventListener(
+
+  "resize",
+
+  ()=>{
+
+    camera.aspect =
+
+    window.innerWidth /
+    window.innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+
+      window.innerWidth,
+
+      window.innerHeight
+
+    );
+
+  }
+
+);
+
+</script>
+
 </body>
 </html>
